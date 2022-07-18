@@ -1,21 +1,26 @@
 use std::thread;
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
+pub mod crypto;
+const BUFFER_SIZE: usize = 256;
 
-fn handle_client(mut stream: TcpStream) {
-    let mut data = [0 as u8; 256];
-    while match stream.read(&mut data) {
-        Ok(size) => {
+fn handle_client(mut stream: TcpStream){
+    let mut data = [0 as u8; BUFFER_SIZE];
+    match stream.read_exact(&mut data) {
+        Ok(_) => {
+            let received_data = &data[0..BUFFER_SIZE];
+            let hash_string = crypto::calculate_hash(&received_data);
+            println!("Received: {}", hash_string);
             // echo everything!
-            stream.write(&data[0..size]).unwrap();
-            true
+            stream.write(&crypto::str_to_buf(hash_string)).unwrap();
+            println!("Closing connection...");
+            stream.shutdown(Shutdown::Both).expect("Failed to shut down gracefully...");
         },
         Err(_) => {
             println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
             stream.shutdown(Shutdown::Both).unwrap();
-            false
         }
-    } {}
+    }
 }
 
 fn main() {
@@ -28,7 +33,7 @@ fn main() {
                 println!("New connection: {}", stream.peer_addr().unwrap());
                 thread::spawn(move|| {
                     // connection succeeded
-                    handle_client(stream)
+                    handle_client(stream);
                 });
             }
             Err(e) => {
