@@ -1,7 +1,12 @@
 use std::thread;
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
+use crate::client::client::Client;
+
+pub mod client;
+pub mod node;
 pub mod crypto;
+
 const BUFFER_SIZE: usize = 256;
 
 fn handle_client(mut stream: TcpStream){
@@ -23,7 +28,7 @@ fn handle_client(mut stream: TcpStream){
     }
 }
 
-fn main() {
+fn start_server() {
     let listener = TcpListener::bind("0.0.0.0:3333").unwrap();
     // accept connections and process them, spawning a new thread for each one
     println!("Server listening on port 3333");
@@ -44,4 +49,13 @@ fn main() {
     }
     // close the socket server
     drop(listener);
+}
+
+fn main() {
+    start_server();
+    let mut client = Client::new();
+    client.locate_references();
+    let message = "Hello!".to_owned();
+    let data = crypto::str_to_buf(message);
+    client.send(&data)
 }

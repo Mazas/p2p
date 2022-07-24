@@ -1,11 +1,9 @@
-pub mod crypto;
 pub mod client {
     use std::io::{Read, Write};
     use std::net::TcpStream;
     use std::str::from_utf8;
     use crate::crypto;
-    use self::node::node::Node;
-    pub mod node;
+    use crate::node::node::Node;
 
     pub struct Client {
         node: Node,
@@ -14,12 +12,12 @@ pub mod client {
     impl Client {
         pub fn new() -> Client {
             return Client {
-                node: Node::new("localhost".to_string()),
+                node: Node::new("localhost".to_string(), crypto::guid()),
                 references: vec![],
             };
         }
         pub fn locate_references(&mut self) {
-            self.references = vec![Node::new(self.node.ip().to_string())];
+            self.references = vec![Node::new(self.node.ip().to_string(), crypto::guid())];
         }
 
 
@@ -55,13 +53,4 @@ pub mod client {
             println!("Terminated.");
         }
     }
-}
-
-fn main() {
-    let mut client = client::Client::new();
-    client.locate_references();
-    let message = "Hello!".to_owned();
-    let data = crypto::str_to_buf(message);
-    client.send(&data)
-
 }

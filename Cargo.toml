@@ -11,13 +11,7 @@ sha2 = "0.10.2"
 base64 = "0.13.0"
 
 [[bin]]
-name = "server"
-path = "src/server.rs"
-test = false
-bench = false
-
-[[bin]]
-name = "client"
-path = "src/client.rs"
+name = "node"
+path = "src/main.rs"
 test = false
 bench = false
